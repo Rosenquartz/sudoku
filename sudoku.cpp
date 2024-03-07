@@ -3,12 +3,57 @@
 #include <cstring>
 #include <vector>
 
+class SudokuCell {
+	private:
+	public:
+		int row;
+		int col;
+		int status;
+		int val;
+};
+
+class SudokuBoard {
+	private:
+	public:
+		std::vector<SudokuCell> cellList{};
+		void initialize(std::vector<int> inputValues) {
+			for (int i = 0; i < inputValues.size(); i++) {
+				SudokuCell newCell;
+				newCell.row = i / 9;
+				newCell.col = i % 9;
+				newCell.val = inputValues[i];
+				cellList.push_back(newCell);
+			}
+		}
+		void updateCell(int row, int col, int val) {
+			cellList[row*9 + col].val = val;
+		}
+		void printBoard() {
+			std::cout << " \t1 2 3   4 5 6   7 8 9" << std::endl;
+			for (int row = 0; row < 9; row++) {
+				std::cout << row;
+				for (int col = 0; col < 9; col++) {
+					if (col == 0) {
+						std::cout << '\t';
+					} else if (col%3 == 0) {
+						std::cout << "  ";
+					} 
+					if (cellList[row*9 + col].val < 0) std::cout << ". ";
+					else std::cout << cellList[row*9+col].val << " ";
+				}
+				std::cout << std::endl;
+			}
+		}
+};
+
 int main() {
     char buffer[100];
 	char command[100];
 	char argstr[100];
     char *args[100];
-    
+
+	SudokuBoard board;
+
     while(true) {
         memset(buffer, 0, sizeof(buffer));
 		memset(command, 0, 100);
@@ -44,9 +89,13 @@ int main() {
 			continue;
 		}
 
+		if (strcmp(command, "print") == 0) {
+			if (board.cellList.size() == 0) std::cout << "No board loaded\n";
+			else board.printBoard();
+			continue;
+		}
+
 		if (strcmp(command, "load") == 0) {
-			
-			std::cout << "Loading" << std::endl;
 			if (args[1] == NULL) {
 				std::cout << "Error: file not specified" << std::endl;
 				continue;
@@ -61,20 +110,17 @@ int main() {
 				continue;
 			}
 
-			std::cout << args[1] << " loaded." << std::endl;
-
 			std::string sline;
-			getline(sudokuFile, sline);
-			std::cout << sline << std::endl;
-			getline(sudokuFile, sline);
-			std::cout << sline << std::endl;
-			getline(sudokuFile, sline);
-			std::cout << sline << std::endl;
-			getline(sudokuFile, sline);
-			std::cout << sline << std::endl;
-			sudokuFile.close();
-
-			std::cout << args[1] << " closed." << std::endl;
+			std::vector<int> svector;
+			for (int i = 0; i < 9; i++) {
+				getline(sudokuFile, sline);
+				for (int j = 0; j < 9; j++) {
+					if (sline[j] == 'x')  svector.push_back(-1);
+					else svector.push_back(sline[j] - '0');
+				}
+			}
+			board.initialize(svector);
+			board.printBoard();
 			continue;
 		}
 
